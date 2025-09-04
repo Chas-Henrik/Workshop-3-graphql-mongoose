@@ -66,11 +66,17 @@ export const resolvers = {
 
 			return await Movie.aggregate(pipeline);
 		},
+		movie: async (_p, { id }) => {
+			if (!id) return null;
+			const movie = await Movie.findById(id);
+
+			return movie;
+		},
 	},
 
-	/* Movie: {
+	Movie: {
 		id: (doc) => String(doc._id),
-		castCount: ??,
-		imdbScoreRounded: ??,
-	}, */
+		castCount: (doc) => doc.cast.length,
+		imdbScoreRounded: (doc) =>  Math.round(doc.imdb.rating),
+	},
 };
