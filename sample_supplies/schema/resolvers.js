@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 export const resolvers = {
 	Query: {
 		// sales(storeLocation, limit)
-		sales: async (_p, { storeLocation, limit }) => {
+		sales: async (_p, { storeLocation, limit, sort }) => {
 			const filter = {};
             // Lägg till i filtret om storeLocation finns, hämta sedan data med .find
 			if(storeLocation) {
@@ -19,7 +19,11 @@ export const resolvers = {
 				sortBy[sortField] = sortOrder;
 			}
 
-			return Sale.find(filter).limit(parseInt(limit)).sort(sortBy);
+			let lim = null;
+			if(limit) {
+				lim = isNaN(parseInt(limit)) ? null: parseInt(limit);
+			}
+			return Sale.find(filter).limit(parseInt(lim)).sort(sortBy);
 		},
 
 		// sale(id)
@@ -37,14 +41,28 @@ export const resolvers = {
 		// totalAmountPerLocation(storeLocation)
 		// Aggregation: summerar price*quantity för alla items på alla sales i en location
 		totalAmountPerLocation: async (_p, { storeLocation }) => {
-			const [row] = await Sale.aggregate([
+			const arr = await Sale.aggregate([
 				//I denna aggregate behöver vi:
 				//$match på storeLocation (https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/)
+				{ $match : { storeLocation } },
 				//$unwind på items (https://www.mongodb.com/docs/manual/reference/operator/aggregation/unwind/)
+				{ $unwind : "$items" },
 				//$group på total (https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/)
 				//$sum på total (https://www.mongodb.com/docs/manual/reference/operator/aggregation/sum/)
 				//$$multiply för att räkna ut totalen (https://www.mongodb.com/docs/manual/reference/operator/aggregation/multiply/)
+				{
+					$group: {
+						_id: null,
+						total: {
+							$sum: {
+								$multiply: [{ $toDouble: "$items.price" }, "$items.quantity"]
+							}
+						}
+					}
+				}
 			]);
+			console.log(arr)
+			const row = arr[0];
 			return row?.total ?? 0;
 		},
 	},
@@ -55,7 +73,11 @@ export const resolvers = {
 
 		// Hur ska vi räkna ut totalAmount per enskild sale?
 		totalAmount: (doc) => {
-			//???
+			const totalSum = doc.items.reduce(
+				(sum, item) => sum + item.price * item.quantity,
+				0
+			);
+			return totalSum.toFixed(2);
 		},
 	},
 };

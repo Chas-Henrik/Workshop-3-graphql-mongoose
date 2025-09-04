@@ -30,7 +30,7 @@ export const typeDefs = /* GraphQL */ `
 
 	type Query {
 		# Hämta alla sales, valfritt filter & limit
-		sales(storeLocation: String, limit: Int): [Sale!]!
+		sales(storeLocation: String, limit: Int, sort: String): [Sale!]!
 
 		# Hämta en specifik sale
 		sale(id: ID!): Sale
