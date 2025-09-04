@@ -3,12 +3,27 @@ export const typeDefs = /* GraphQL */ `
     # Date i saleDate får vara String i GraphQL
 
 	type Item {
+		name: String
+		tags: [String]
+		price: Float
+		quantity: Int
 	}
 
 	type Customer {
+		gender: String
+		age: Int
+		email: String
+		satisfaction: Int
 	}
 
 	type Sale {
+		id: ID!
+		saleDate: String
+		items: [Item]
+		storeLocation: String
+		customer: Customer
+		couponUsed: Boolean
+		purchaseMethod: String
 		# Beräknat fält (resolver): summerar items.price * items.quantity
 		totalAmount: Float!
 	}

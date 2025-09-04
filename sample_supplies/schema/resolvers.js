@@ -6,16 +6,32 @@ export const resolvers = {
 		// sales(storeLocation, limit)
 		sales: async (_p, { storeLocation, limit }) => {
 			const filter = {};
-            //Lägg till i filtret om storeLocation finns, hämta sedan data med .find
+            // Lägg till i filtret om storeLocation finns, hämta sedan data med .find
+			if(storeLocation) {
+				filter.storeLocation = storeLocation;
+			}
             //Begränsa med .limit om limit finns
             //Se om ni kan lägga in en sort på saleDate
-			return query;
+			let sortBy = {};
+			if (sort) {
+				const sortField = sort.startsWith("-") ? sort.slice(1) : sort;
+				const sortOrder = sort.startsWith("-") ? -1 : 1;
+				sortBy[sortField] = sortOrder;
+			}
+
+			return Sale.find(filter).limit(parseInt(limit)).sort(sortBy);
 		},
 
 		// sale(id)
 		sale: async (_p, { id }) => {
 			//Kolla att det är ett valid mongoose object
+			if (!mongoose.Types.ObjectId.isValid(id)) {
+				throw new Error("Invalid ID");
+			}
             //Hämta en sale med id
+			const movie = await Sale.findById(id);
+
+			return movie;
 		},
 
 		// totalAmountPerLocation(storeLocation)

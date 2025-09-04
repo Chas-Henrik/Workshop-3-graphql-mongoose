@@ -1,7 +1,7 @@
 export const typeDefs = /* GraphQL */ `
   # Enum för olika kosttyper (t.ex. VEGAN, VEGETARIAN, osv.)
   enum Diet {
-    # ...
+    "VEGAN", "VEGETARIAN", "GLUTEN_FREE", "NONE"
   }
 
   # En ingrediens i ett recept

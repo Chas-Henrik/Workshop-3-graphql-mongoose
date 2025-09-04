@@ -6,17 +6,14 @@ export const resolvers = {
 		movies: async (_p, { filter, limit, skip}) => {
             //Här sätter vi i ordning vårt filter med variabeln q
 			const q = {};
-			console.log("filter",filter);
-			console.log("limit",limit);
-			console.log("skip",skip);
 
             //Fyll på med filter för titleContains (regex), genre(exakt matchning), minYear(gte), maxYear(lte), minRating(gte)
 			if(filter) {
 				if (filter.titleContains) q.title = new RegExp(filter.titleContains, "i");
-				if (filter.genre) q.genre = new RegExp(filter.titleContains);
+				if (filter.genre) q.genres = filter.genre;
 				if (filter.minYear || filter.maxYear) {
 					q.year = {};
-					if (filter.minYear) q.year.$gte = parseInt(filter.minYear);
+					if (filter.minYear) q.year = {$gte: filter.minYear};
 					if (filter.maxYear) q.year.$lte = parseInt(filter.maxYear);
 				}
 				if (filter.minRating) {
