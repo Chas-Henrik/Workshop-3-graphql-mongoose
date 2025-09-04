@@ -1,17 +1,34 @@
 // resolvers.js
-import { Movie } from "./models/Movie.js";
+import { Movie } from "../models/Movie.js";
 
 export const resolvers = {
 	Query: {
 		movies: async (_p, { filter, limit, skip}) => {
             //Här sätter vi i ordning vårt filter med variabeln q
 			const q = {};
-            console.log(filter);
+			console.log("filter",filter);
+			console.log("limit",limit);
+			console.log("skip",skip);
+
             //Fyll på med filter för titleContains (regex), genre(exakt matchning), minYear(gte), maxYear(lte), minRating(gte)
-			
+			if(filter) {
+				if (filter.titleContains) q.title = new RegExp(filter.titleContains, "i");
+				if (filter.genre) q.genre = new RegExp(filter.titleContains);
+				if (filter.minYear || filter.maxYear) {
+					q.year = {};
+					if (filter.minYear) q.year.$gte = parseInt(filter.minYear);
+					if (filter.maxYear) q.year.$lte = parseInt(filter.maxYear);
+				}
+				if (filter.minRating) {
+					q["imdb.rating"] = { $gte: parseFloat(filter.minRating) };
+				}
+			}
+            console.log("q", q);
             //Skip = hoppa över X antal dokument (enkel paginering)
+			const offset = parseInt(skip) * parseInt(limit);
+
             //Limit = begränsa antalet dokument som returneras
-			return Movie.find(q); //Vad kan vi lägga till här för att använda skip och limit?
+			return Movie.find(q).limit(parseInt(limit)).skip(offset); //Vad kan vi lägga till här för att använda skip och limit?
 		},
 
 		//movie: Hur hämtar vi ut en enskild movie??,
