@@ -35,13 +35,36 @@ export const resolvers = {
 
 		topRatedPerYear: async (_p, { year, minVotes, limit }) => {
 			/*skriv en aggregationspipeline som hämtar toppfilmer för ett år*/
+			const pipeline = [];
 			//vi behöver $match på år och minVotes (alltså minsta antal röster)
+			const matchStage = {
+				year: year,
+				"imdb.votes": { $gte: minVotes }
+			};
+			pipeline.push({ $match: matchStage });
+
 			//vi vill sortera $sort på imdb.rating
+			pipeline.push({ $sort: { "imdb.rating": -1 } });
+
 			//vi vill begränsa $limit till limit
+			if (limit) {
+				pipeline.push({ $limit: limit });
+			}
 			//vi vill projektera $project ut title, year, imdb, genres, cast, languages, directors
 			//Läs mer om aggregationspipeline på https://article.arunangshudas.com/what-is-the-mongodb-aggregation-pipeline-in-mongoose-308a05c15e7e
+			pipeline.push({
+				$project: {
+					title: 1,
+					year: 1,
+					imdb: 1,
+					genres: 1,
+					cast: 1,
+					languages: 1,
+					directors: 1
+				}
+			});
 
-			return Movie.aggregate([]);
+			return await Movie.aggregate(pipeline);
 		},
 	},
 
